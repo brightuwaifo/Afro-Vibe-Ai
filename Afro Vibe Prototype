@@ -1,0 +1,237 @@
+import React, { useState, useCallback } from 'react';
+
+// Tailwind CSS is often imported into the main index.css or a global style file.
+// For a true single-file prototype (assuming your project is set up to process JSX and Tailwind):
+
+/**
+ * AfroVibesAI.jsx
+ *
+ * A highly responsive, single-file React component for a custom AI music generation tool,
+ * styled with Tailwind CSS and optimized for mobile devices.
+ */
+
+const GENRES = [
+  'Highlife',
+  'Afrobeat',
+  'Afro-Highlife',
+  'Fuji',
+  'Afro-soul',
+  'Amapiano',
+];
+
+const AfroVibesAI = () => {
+  // --- State Management ---
+  const [selectedGenres, setSelectedGenres] = useState(['Afrobeat']);
+  const [duration, setDuration] = useState(3); // Duration in minutes (1 to 20)
+  const [prompt, setPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedTrack, setGeneratedTrack] = useState(null);
+  const [progress, setProgress] = useState(0); // Progress percentage (0-100)
+
+  // --- Handlers ---
+
+  const handleGenreToggle = useCallback((genre) => {
+    setSelectedGenres((prev) =>
+      prev.includes(genre)
+        ? prev.filter((g) => g !== genre)
+        : [...prev, genre]
+    );
+  }, []);
+
+  const handleGenerate = () => {
+    if (selectedGenres.length === 0 || !prompt.trim()) {
+      alert('Please select at least one genre and enter a prompt.');
+      return;
+    }
+
+    setIsGenerating(true);
+    setGeneratedTrack(null);
+    setProgress(0);
+
+    // --- Simulate AI Generation & Progress ---
+    const totalTime = 4000; // 4 seconds total simulation time
+    const intervalTime = 50; // Update every 50ms
+    const totalSteps = totalTime / intervalTime;
+    let currentStep = 0;
+
+    const generationInterval = setInterval(() => {
+      currentStep += 1;
+      const newProgress = Math.min(100, Math.round((currentStep / totalSteps) * 100));
+      setProgress(newProgress);
+
+      if (currentStep >= totalSteps) {
+        clearInterval(generationInterval);
+        setIsGenerating(false);
+        setGeneratedTrack({
+          title: `AfroVibes Mix - ${selectedGenres[0] || 'Fusion'} #${Math.floor(Math.random() * 1000)}`,
+          duration: `${duration}:00`,
+        });
+        setProgress(0); // Reset progress bar for a clean UI
+      }
+    }, intervalTime);
+  };
+
+  // --- UI Components ---
+
+  const GenreButton = ({ genre }) => (
+    <button
+      onClick={() => handleGenreToggle(genre)}
+      className={`
+        px-4 py-2 text-sm font-semibold rounded-full transition-all duration-200 ease-in-out
+        ${selectedGenres.includes(genre)
+          ? 'bg-orange-500 text-white shadow-lg'
+          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        }
+      `}
+    >
+      {genre}
+    </button>
+  );
+
+  const OutputSection = () => {
+    if (isGenerating) {
+      return (
+        <div className="p-4 bg-gray-800 rounded-lg shadow-xl animate-pulse">
+          <p className="text-lg font-bold text-white mb-2">Generating Track...</p>
+          <div className="w-full bg-gray-700 rounded-full h-2.5">
+            <div
+              className="bg-orange-500 h-2.5 rounded-full transition-all duration-100 ease-linear"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-400 mt-2">{progress}% Complete</p>
+        </div>
+      );
+    }
+
+    if (generatedTrack) {
+      return (
+        <div className="p-4 bg-gray-800 rounded-lg shadow-2xl transition-opacity duration-500">
+          <p className="text-xl font-extrabold text-orange-400">{generatedTrack.title}</p>
+          <p className="text-sm text-gray-400 mb-4">Duration: {generatedTrack.duration}</p>
+
+          <div className="flex items-center space-x-4">
+            <button
+              className="p-3 bg-orange-500 rounded-full text-white shadow-xl hover:bg-orange-600 transition"
+              aria-label="Play Track"
+              // Placeholder for Play/Pause logic
+            >
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </button>
+            <div className="flex-grow">
+              {/* Simple progress bar placeholder */}
+              <div className="w-full bg-gray-700 rounded-full h-1.5">
+                <div className="bg-orange-500 h-1.5 rounded-full" style={{ width: '40%' }}></div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1 flex justify-between">
+                <span>1:12</span>
+                <span>{generatedTrack.duration}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // Initial state / No generation yet
+    return (
+      <div className="p-4 bg-gray-800 rounded-lg shadow-xl">
+        <p className="text-lg text-gray-400">Your AI-generated groove will appear here!</p>
+      </div>
+    );
+  };
+
+  // --- Main Render ---
+
+  return (
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-lg bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 space-y-8">
+        
+        {/* Header */}
+        <header className="text-center">
+          <h1 className="text-4xl font-extrabold text-orange-500 tracking-tighter">
+            AfroVibes AI
+          </h1>
+          <p className="text-lg text-gray-400 mt-1">Generate your next African masterpiece.</p>
+        </header>
+
+        {/* Input Controls Section */}
+        <section className="space-y-6">
+          
+          {/* 1. Custom Genre Selection */}
+          <div>
+            <label className="block text-lg font-semibold text-gray-300 mb-3">
+              Select Genres ({selectedGenres.length} selected)
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {GENRES.map((genre) => (
+                <GenreButton key={genre} genre={genre} />
+              ))}
+            </div>
+          </div>
+
+          {/* 2. Duration Control */}
+          <div>
+            <label className="block text-lg font-semibold text-gray-300 mb-3">
+              Track Duration: <span className="text-orange-400">{duration} minutes</span>
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="20"
+              value={duration}
+              onChange={(e) => setDuration(Number(e.target.value))}
+              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg focus:outline-none focus:ring-2 focus:ring-orange-500 accent-orange-500"
+            />
+          </div>
+
+          {/* 3. Prompt Area */}
+          <div>
+            <label htmlFor="prompt" className="block text-lg font-semibold text-gray-300 mb-3">
+              Describe the Mood/Style
+            </label>
+            <textarea
+              id="prompt"
+              rows="3"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder='e.g., "A chill, Lagos-style sunset groove with a deep Amapiano bassline and subtle Highlife horns."'
+              className="w-full p-3 border-2 border-gray-700 rounded-lg bg-gray-700 text-gray-200 placeholder-gray-500 focus:border-orange-500 focus:ring-orange-500 transition resize-none"
+            ></textarea>
+          </div>
+
+          {/* Generate Button */}
+          <button
+            onClick={handleGenerate}
+            disabled={isGenerating || selectedGenres.length === 0 || !prompt.trim()}
+            className={`
+              w-full py-4 rounded-xl text-lg font-extrabold shadow-xl transition-all duration-300
+              ${isGenerating
+                ? 'bg-gray-500 cursor-not-allowed text-gray-300'
+                : 'bg-orange-500 text-white hover:bg-orange-600 active:scale-[0.98]'
+              }
+            `}
+          >
+            {isGenerating ? 'Generating...' : 'Generate AfroVibe'}
+          </button>
+        </section>
+        
+        <hr className="border-gray-700" />
+
+        {/* Output Section */}
+        <section>
+          <h2 className="text-2xl font-bold text-gray-300 mb-4">Output</h2>
+          <OutputSection />
+        </section>
+
+        <footer className="text-center text-xs text-gray-500 pt-4">
+            Prototype developed with React & Tailwind CSS.
+        </footer>
+      </div>
+    </div>
+  );
+};
+
+export default AfroVibesAI;
